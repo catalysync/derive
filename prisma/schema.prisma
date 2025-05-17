@@ -13,3 +13,19 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Workflow {
+  id String @id @default(cuid())
+  userId String
+  name String
+  description String?
+
+  definition String
+  status String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User cannot have two workflows with the same name
+  @@unique([name, userId])
+}
