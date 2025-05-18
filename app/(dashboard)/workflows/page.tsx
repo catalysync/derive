@@ -2,8 +2,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
  import { GetWorkflowsForUser } from '@/modules/workflows/server/get-workflows-for-user'
 import CreateWorkflowDialog from '@/modules/workflows/ui/components/create-workflow-dialog'
+import WorkflowCard from '@/modules/workflows/ui/components/workflow-card'
 import { AlertCircle, InboxIcon } from 'lucide-react'
 import React, { Suspense } from 'react'
+import { Workflow } from '../../generated/prisma/index';
 
 function page() {
   return (
@@ -13,7 +15,7 @@ function page() {
           <h1 className="text-3xl font-bold">Workflows</h1>
           <p className="text-muted-foreground">Manage your workflows</p>
         </div>
-        <CreateWorkflowDialog />
+        <CreateWorkflowDialog  />
       </div>
 
       <div className="h-full py-6">
@@ -67,7 +69,13 @@ async function UserWorkflows() {
     )
   }
 
-  <div></div>
+  return <div className="grid grid-cols-1 gap-4">
+    {
+      workflows.map((workflow: Workflow) => (
+        <WorkflowCard key={workflow.id} workflow={workflow} />
+      ))
+    }
+  </div>
 }
 
 

@@ -7,13 +7,15 @@ import { FileTextIcon, PlayIcon, ShuffleIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import WorkflowActions from "../workflow-actions";
+import { Workflow } from "@/app/generated/prisma";
+import { WorkflowStatus } from "@/modules/common/types/workflow";
 
 const statusColors = {
   DRAFT: "bg-yellow-400 text-yellow-600",
   PUBLISHED: "bg-primary",
 };
 
-function WorkflowCard({ workflow }) {
+function WorkflowCard({ workflow }: { workflow: Workflow}) {
   const isDraft = workflow.status === "DRAFT";
 
   return (
@@ -23,7 +25,7 @@ function WorkflowCard({ workflow }) {
           <div
             className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center",
-              statusColors[workflow.status],
+              statusColors[workflow.status as WorkflowStatus],
             )}
           >
             {isDraft ? (
