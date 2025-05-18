@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 
 
 export async function GetWorkflowsForUser() {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if(!userId) {
     throw new Error("unauthenticated");

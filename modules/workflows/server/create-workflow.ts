@@ -10,10 +10,10 @@ export async function CreateWorkflow(form: createWorkflowSchemaType) {
   const { success, data } = createWorkflowSchema.safeParse(form);
   
   if (!success) {
-    throw new Error("invalid form data");
+    throw new Error("invalid workflow data");
   }
 
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if(!userId) {
     throw new Error("unauthenticated");
