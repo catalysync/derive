@@ -5,6 +5,7 @@ import { AppNodeData } from "@/modules/common/types/app-node";
 import { TaskRegistry } from "../tasks/registry";
 import NodeCardHeader from "./node-card/header";
 import NodeCardInputs, { NodeInput } from "./node-card/inputs";
+import NodeCardOutputs, { NodeOutput } from "./node-card/outputs";
 
 const NodeComponent = memo((props: NodeProps) => {
   const nodeData = props.data as AppNodeData
@@ -19,6 +20,13 @@ const NodeComponent = memo((props: NodeProps) => {
         })
       }
     </NodeCardInputs>
+    <NodeCardOutputs>
+      {
+        task.outputs.map((output) => {
+          return <NodeOutput key={output.type} output={output} />
+        })
+      }
+    </NodeCardOutputs>
   </NodeCard>
 });
 

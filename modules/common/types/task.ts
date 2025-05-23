@@ -1,9 +1,12 @@
 export enum TaskType {
-  LAUNCH_BROWSER = "LAUNCH_BROWSER"
+  LAUNCH_BROWSER = "LAUNCH_BROWSER",
+  PAGE_TO_HTML = "PAGE_TO_HTML",
+  EXTRACT_TEXT_FROM_ELEMENT = "EXTRACT_TEXT_FROM_ELEMENT"
 }
 
 export enum TaskParamType {
-  STRING = "STRING"
+  STRING = "STRING",
+  BROWSER_INSTANCE = "BROWSER_INSTANCE"
 }
 
 export interface TaskParam {
@@ -13,4 +16,9 @@ export interface TaskParam {
   required?: boolean;
   hideHandle?: boolean;
   [key: string]: any;
+}
+
+export const ColorForHandle: Record<TaskParamType, string> = {
+  BROWSER_INSTANCE: "!bg-sky-400",
+  STRING: "!bg-amber-400"
 }

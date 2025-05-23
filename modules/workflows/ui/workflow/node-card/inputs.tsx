@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { TaskParam, TaskParamType } from '@/modules/common/types/task';
+import { ColorForHandle, TaskParam, TaskParamType } from '@/modules/common/types/task';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
 import React, { useCallback } from 'react'
 import StringInput from './string-input';
@@ -25,7 +25,10 @@ export const NodeInput = ({input, nodeId}: { input: TaskParam, nodeId: string })
       id={input.name}
       type='target'
       position={Position.Left}
-      className={cn("!bg-muted-foreground !border-2 !border-background !-left-2 !w-4 !h-4")}
+      className={cn(
+        "!bg-muted-foreground !border-2 !border-background !-left-2 !w-4 !h-4",
+        ColorForHandle[input.type]
+      )}
     />)}
   </div>
 }
@@ -48,6 +51,8 @@ const NodeInputField = ({input, nodeId}: { input: TaskParam, nodeId: string }) =
   switch (input.type) {
     case TaskParamType.STRING:
       return <StringInput input={input} value={value} updateNodeInputValue={updateNodeInputValue}/>
+    case TaskParamType.BROWSER_INSTANCE:
+      return <BrowserInstanceInput input={input} value={""} updateNodeInputValue={updateNodeInputValue}/>
     default:
       return <div className="w-full">
         <p className="text-xs text-muted-foreground">
