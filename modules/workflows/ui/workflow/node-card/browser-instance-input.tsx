@@ -8,7 +8,7 @@ interface Props {
   value: string;
   updateNodeInputValue: (newValue: string) => void;
 }
-const StringInput = ({input, value, updateNodeInputValue}: Props) => {
+const BrowserInstanceInput = ({input, value, updateNodeInputValue}: Props) => {
   const id = useId();
   const [internalValue, setInternalValue] = useState(value);
 
@@ -29,4 +29,4 @@ const StringInput = ({input, value, updateNodeInputValue}: Props) => {
   )
 }
 
-export default StringInput
+export default BrowserInstanceInput;

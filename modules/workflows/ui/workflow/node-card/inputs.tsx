@@ -1,10 +1,10 @@
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ColorForHandle, TaskParam, TaskParamType } from '@/modules/common/types/task';
-import { Handle, Position, useReactFlow } from '@xyflow/react';
+import { Handle, Position, useEdges, useReactFlow } from '@xyflow/react';
 import React, { useCallback } from 'react'
 import StringInput from './string-input';
 import { AppNode } from '@/modules/common/types/app-node';
+import BrowserInstanceInput from './browser-instance-input';
 
 interface Props {
   children: React.ReactNode;
@@ -19,10 +19,14 @@ const NodeCardInputs = ({children}: Props) => {
 }
 
 export const NodeInput = ({input, nodeId}: { input: TaskParam, nodeId: string }) => {
+  const edges = useEdges();
+
+  const isConnected = edges.some(edge => edge.target === nodeId && edge.targetHandle === input.name)
   return <div className='flex justify-start relative p-3 bg-secondary w-full'>
-    <NodeInputField input={input} nodeId={nodeId} />
+    <NodeInputField input={input} nodeId={nodeId} disabled={isConnected} />
     {!input.hideHandle && (<Handle 
       id={input.name}
+      isConnectable={!isConnected}
       type='target'
       position={Position.Left}
       className={cn(
@@ -34,7 +38,7 @@ export const NodeInput = ({input, nodeId}: { input: TaskParam, nodeId: string })
 }
 
 
-const NodeInputField = ({input, nodeId}: { input: TaskParam, nodeId: string }) => {
+const NodeInputField = ({input, nodeId, disabled}: { input: TaskParam, nodeId: string, disabled: boolean }) => {
   const {updateNodeData, getNode} = useReactFlow();
   const node = getNode(nodeId) as AppNode;
   const value =  node?.data.inputs?.[input.name]
@@ -50,7 +54,11 @@ const NodeInputField = ({input, nodeId}: { input: TaskParam, nodeId: string }) =
 
   switch (input.type) {
     case TaskParamType.STRING:
-      return <StringInput input={input} value={value} updateNodeInputValue={updateNodeInputValue}/>
+      return <StringInput
+      input={input}
+      value={value}
+      disabled={disabled}
+      updateNodeInputValue={updateNodeInputValue}/>
     case TaskParamType.BROWSER_INSTANCE:
       return <BrowserInstanceInput input={input} value={""} updateNodeInputValue={updateNodeInputValue}/>
     default:
