@@ -24,5 +24,6 @@ export const ExtractTextFromElementTask = {
       name: "Extracted text",
       type: TaskParamType.STRING
     },
-  ]
+  ],
+  credits: 2
 }

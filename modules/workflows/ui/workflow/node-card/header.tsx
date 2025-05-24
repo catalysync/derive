@@ -2,15 +2,21 @@ import { TaskType } from '@/modules/common/types/task'
 import React from 'react'
 import { TaskRegistry } from '../../tasks/registry'
 import { Badge } from '@/components/ui/badge'
-import { CoinsIcon, GripVerticalIcon } from 'lucide-react'
+import { CoinsIcon, CopyIcon, GripVerticalIcon, TrashIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useReactFlow } from '@xyflow/react'
+import { AppNode } from '@/modules/common/types/app-node'
+import { CreateFlowNode } from '../../tasks/create-flow-node'
 
 interface Props {
-  taskType: TaskType
+  taskType: TaskType;
+  nodeId: string;
 }
 
-const NodeCardHeader = ({ taskType }: Props) => {
-  const task = TaskRegistry[taskType]
+const NodeCardHeader = ({ taskType, nodeId }: Props) => {
+  const task = TaskRegistry[taskType];
+
+  const [deleteElements, getNode, addNodes] = useReactFlow();
 
   return (
     <div className='flex items-center gap-2 p-2'>
@@ -25,6 +31,37 @@ const NodeCardHeader = ({ taskType }: Props) => {
             <CoinsIcon size={16} />
             20
           </Badge>
+          {
+            !task.isEntryPoint && (
+              <>
+                <Button variant={"ghost"} size={"icon"} onClick={() => {
+                  deleteElements({
+                    nodes: [{ id: nodeId }]
+                  })
+                }}>
+                  <TrashIcon size={12} />
+                </Button>
+
+                <Button variant={"ghost"} size={"icon"} onClick={() => {
+                  const node = getNode(nodeId) as AppNode;
+
+                  const newX = node.position.x;
+                  const newY = node.position.y + (node.measured?.height || 20) + 20;
+
+                  const newNode = CreateFlowNode(
+                    node.data.type, {
+                      x: newX,
+                      y: newY,
+                    }
+                  );
+
+                  addNodes([newNode])
+                }}>
+                  <CopyIcon size={12} />
+                </Button>
+              </>
+            )
+          }
           <Button variant={"ghost"} size={"icon"} className="drag=handle cursor-grab">
             <GripVerticalIcon size={20} />
           </Button>

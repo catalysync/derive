@@ -22,5 +22,6 @@ export const PageToHtmlTask = {
       name: "Web page",
       type: TaskParamType.BROWSER_INSTANCE
     }
-  ]
+  ],
+  credits: 2
 }
