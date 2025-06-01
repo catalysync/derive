@@ -1,25 +1,54 @@
-import { AppNode } from "@/modules/common/types/app-node";
+import { AppNode, AppNodeMissingInputs } from "@/modules/common/types/app-node";
 import { WorkflowExecutionPlan, WorkflowExecutionPlanPhase } from "@/modules/common/types/workflow";
 import { Edge, getIncomers } from "@xyflow/react";
 import { TaskRegistry } from "./registry";
 
-type FlowToExecutionPlanType = {
-  executionPlan?: WorkflowExecutionPlan;
+export enum FlowToExecutionPlanValidationError {
+  "NO_ENTRY_POINT",
+  "INVALID_INPUTS"
 }
+
+export type FlowToExecutionPlanErrorType = {
+  type: FlowToExecutionPlanValidationError;
+  invalidElements?: AppNodeMissingInputs[];
+}
+
+export type FlowToExecutionPlanType = {
+  executionPlan?: WorkflowExecutionPlan;
+  error?: FlowToExecutionPlanErrorType
+}
+
+
 
 export function FlowToExecutionPlan(nodes: AppNode[], edges: Edge[]): FlowToExecutionPlanType {
   const entryPoint = nodes.find(node => TaskRegistry[node.data.type].isEntryPoint);
 
   if (!entryPoint) {
-    throw new Error("")
+    return {
+      error: {
+        type: FlowToExecutionPlanValidationError.NO_ENTRY_POINT
+      }
+    }
   }
 
+  const inputsWithErrors: AppNodeMissingInputs[] = [];
   const planned = new Set<string>();
   const executionPlan: WorkflowExecutionPlan = [{
     phase: 1,
     nodes: [entryPoint]
   }];
   planned.add(entryPoint.id);
+
+  // Invalid Entrypoint Inputs
+  const invalidInputs = getInvalidInputs(entryPoint, edges, planned);
+  if (invalidInputs.length > 0) {
+    inputsWithErrors.push(
+      {
+        nodeId: entryPoint.id,
+        inputs: invalidInputs
+      }
+    )
+  }
 
   for (
     let phase = 2;
@@ -35,7 +64,12 @@ export function FlowToExecutionPlan(nodes: AppNode[], edges: Edge[]): FlowToExec
       if (invalidInputs.length > 0) {
         const incomers = getIncomers(currentNode, nodes, edges);
         if (incomers.every(incomer => planned.has(incomer.id))) {
-
+          inputsWithErrors.push(
+            {
+              nodeId: currentNode.id,
+              inputs: invalidInputs
+            }
+          )
         } else {
           continue;
         }
@@ -51,7 +85,14 @@ export function FlowToExecutionPlan(nodes: AppNode[], edges: Edge[]): FlowToExec
     executionPlan.push(nextPhase);
   }
 
-  
+  if(inputsWithErrors.length > 0) {
+    return {
+      error: {
+        type: FlowToExecutionPlanValidationError.INVALID_INPUTS,
+        invalidElements: inputsWithErrors
+      }
+    }
+  }
 
   return { executionPlan };
 }

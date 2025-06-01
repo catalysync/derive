@@ -5,6 +5,7 @@ import React, { useCallback } from 'react'
 import StringInput from './string-input';
 import { AppNode } from '@/modules/common/types/app-node';
 import BrowserInstanceInput from './browser-instance-input';
+import useFlowValidation from '../useFlowValidation';
 
 interface Props {
   children: React.ReactNode;
@@ -21,8 +22,16 @@ const NodeCardInputs = ({children}: Props) => {
 export const NodeInput = ({input, nodeId}: { input: TaskParam, nodeId: string }) => {
   const edges = useEdges();
 
+  const { invalidInputs } = useFlowValidation();
+  const hasErrors = invalidInputs.find(node => node.nodeId === nodeId)?.inputs.find(
+    (invalidInput) => invalidInput === input.name
+  );
+
   const isConnected = edges.some(edge => edge.target === nodeId && edge.targetHandle === input.name)
-  return <div className='flex justify-start relative p-3 bg-secondary w-full'>
+  return <div className={cn(
+      'flex justify-start relative p-3 bg-secondary w-full',
+      hasErrors && 'bg-destructive/30'
+    )}>
     <NodeInputField input={input} nodeId={nodeId} disabled={isConnected} />
     {!input.hideHandle && (<Handle 
       id={input.name}
