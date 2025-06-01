@@ -16,7 +16,7 @@ interface Props {
 const NodeCardHeader = ({ taskType, nodeId }: Props) => {
   const task = TaskRegistry[taskType];
 
-  const [deleteElements, getNode, addNodes] = useReactFlow();
+  const {deleteElements, getNode, addNodes} = useReactFlow();
 
   return (
     <div className='flex items-center gap-2 p-2'>
@@ -29,7 +29,7 @@ const NodeCardHeader = ({ taskType, nodeId }: Props) => {
           {task.isEntryPoint && <Badge>Entrypoint</Badge>}
           <Badge className='gap-2 flex items-center text-xs'>
             <CoinsIcon size={16} />
-            20
+            {task.credits}
           </Badge>
           {
             !task.isEntryPoint && (
