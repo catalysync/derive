@@ -33,7 +33,6 @@ const useExecutionPlan = () => {
     }
 
     clearErrors();
-    
     return executionPlan;
   }, [clearErrors, handleError, toObject]);
 
