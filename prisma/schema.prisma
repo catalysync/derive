@@ -23,6 +23,10 @@ model Workflow {
   definition String
   status String // DRAFT | PUBLISHED
 
+  lastRunAt DateTime?
+  lastRunId String?
+  lastRunStatus String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -45,6 +49,8 @@ model WorkflowExecution {
   createdAt DateTime @default(now())
   startedAt DateTime?
   completedAt DateTime?
+
+  creditsConsumed Int @default(0)
 
   executionPhases ExecutionPhase[]
 
