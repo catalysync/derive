@@ -3,14 +3,16 @@ import TooltipWrapper from "@/modules/common/ui/components/tooltip-wrapper"
 import { ChevronLeftIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import SaveButton from "./save-button";
+import ExecuteButton from "./execute-button";
 
 interface Props {
   title: string;
   subtitle?: string;
   workflowId: string;
+  showWorkflowButtons?: boolean;
 }
 
-const TopBar = ({title, subtitle, workflowId}: Props) => {
+const TopBar = ({title, subtitle, workflowId, showWorkflowButtons = true}: Props) => {
   const router = useRouter();
 
   return (
@@ -37,7 +39,13 @@ const TopBar = ({title, subtitle, workflowId}: Props) => {
       </div>
 
       <div className="flex gap-1 flex-1 justify-end">
-        <SaveButton workflowId={workflowId} />
+        { showWorkflowButtons &&
+          <>
+            <ExecuteButton workflowId={workflowId} />
+            <SaveButton workflowId={workflowId} />
+          </>
+        }
+        
       </div>
     </header>
   )
