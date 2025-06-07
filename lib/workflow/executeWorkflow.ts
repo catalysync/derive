@@ -3,6 +3,12 @@ import { prisma } from "../prisma";
 import { revalidatePath } from "next/cache";
 import { ExecutionPhaseStatus, WorkflowExecutionStatus } from "@/modules/common/types/workflow";
 import { TaskRegistry } from "@/modules/workflows/ui/tasks/registry";
+import { AppNode } from "@/modules/common/types/app-node";
+import { ExecutorRegistry } from "@/modules/workflows/server/executor/registry";
+import { Environment, ExecutionEnvironment } from "@/modules/common/types/executor";
+import { WorkflowTask } from '../../modules/common/types/workflow';
+import { TaskParamType } from "@/modules/common/types/task";
+import { Browser, Page } from "puppeteer";
 
 export async function ExecuteWorkflow(executionId: string) {
   const execution = await prisma.workflowExecution.findUnique({
@@ -25,8 +31,9 @@ export async function ExecuteWorkflow(executionId: string) {
 
   let executionFailed = false;
   let creditsConsumed = 0;
+
   for (const phase of execution.phases) {
-    const phaseExecution = await executeWorkflowPhase(phase);
+    const phaseExecution = await executeWorkflowPhase(phase, environment);
     if (!phaseExecution.success) {
       executionFailed = true;
       break;
@@ -34,6 +41,8 @@ export async function ExecuteWorkflow(executionId: string) {
   }
 
   await finalizeWorkflowExecution(executionId, execution.workflowId, executionFailed, creditsConsumed);
+
+  await cleanupEnvironment(environment);
 
   revalidatePath("/workflows/runs");
 }
@@ -105,9 +114,11 @@ async function finalizeWorkflowExecution(
   })
 }
 
-async function executeWorkflowPhase(phase: ExecutionPhase) {
+async function executeWorkflowPhase(phase: ExecutionPhase, environment: Environment) {
   const startedAt = new Date();
   const node = JSON.parse(phase.node) as AppNode;
+
+  setupEnvironmentForPhase(node, environment);
 
   //  Update phase status
   await prisma.executionPhase.update({
@@ -117,6 +128,7 @@ async function executeWorkflowPhase(phase: ExecutionPhase) {
     data: {
       status: ExecutionPhaseStatus.RUNNING,
       startedAt,
+      inputs: JSON.stringify(environment.phases[node.id].inputs)
     },
   });
 
@@ -124,13 +136,15 @@ async function executeWorkflowPhase(phase: ExecutionPhase) {
   console.log(`Executing phase ${phase.name} with ${creditsRequired} credits required`)
 
   // Decrement user balance with required credits
-  const success = Math.random() < 0.7;
+  const success = await executePhase(phase, node, environment);
 
-  await finalizePhase(phase.id, success);
+  const outputs = environment.phases[node.id].outputs;
+
+  await finalizePhase(phase.id, success, outputs);
   return { success };
 }
 
-async function finalizePhase(phaseId: string, success: boolean) {
+async function finalizePhase(phaseId: string, success: boolean, outputs: any) {
   const finalStatus = success
     ? ExecutionPhaseStatus.COMPLETED
     : ExecutionPhaseStatus.FAILED;
@@ -141,7 +155,62 @@ async function finalizePhase(phaseId: string, success: boolean) {
     },
     data: {
       status: finalStatus,
-      completedAt: new Date()
+      completedAt: new Date(),
+      outputs: JSON.stringify(outputs),
     }
   })
+}
+
+async function executePhase(phase: ExecutionPhaseStatus, node: AppNode, environment: Environment): Promise<boolean> {
+  const runFn = ExecutorRegistry[node.data.type];
+
+  if (!runFn) {
+    return false;
+  }
+
+  const executionEnvironment: ExecutionEnvironment<WorkflowTask> = createExecutionEnvironment(node, environment)
+
+  return await runFn(executionEnvironment);
+}
+
+function setupEnvironmentForPhase(node: AppNode, environment: Environment) {
+  environment.phases[node.id] = { inputs: {}, outputs: {} };
+  const inputs = TaskRegistry[node.data.type].inputs;
+
+  for (const input of inputs) {
+    if (input.type === TaskParamType.BROWSER_INSTANCE) {
+      continue;
+    }
+
+    const inputValue = node.data.inputs[input.name];
+
+    if (inputValue) {
+      environment.phases[node.id].inputs[input.name] = inputValue;
+      continue;
+    }
+
+    // Get input value from outputs in the environment
+    
+  }
+}
+
+function createExecutionEnvironment(node: AppNode, environment: Environment): ExecutionEnvironment<WorkflowTask> {
+  return {
+    getInput: (name:string) => environment.phases[node.id]?.inputs[name],
+    setOutput: (name: string, value: string) => {
+      environment.phases[node.id].outputs[name] = value;
+    },
+
+    getBrowser: () => environment.browser,
+    setBrowser: (browser: Browser) => environment.browser = browser,
+
+    getPage: () => environment.page,
+    setPage: (page: Page) => (environment.page = page)
+  }
+}
+
+async function cleanupEnvironment(environment: Environment) {
+  if (environment.browser) {
+    await environment.browser.close().catch(err => console.error("cannot close browser, reason:", err))
+  }
 }
