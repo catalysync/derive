@@ -44,6 +44,8 @@ model WorkflowExecution {
   // Manual or Cron
   trigger String
 
+  definition String
+
   status String
 
   createdAt DateTime @default(now())

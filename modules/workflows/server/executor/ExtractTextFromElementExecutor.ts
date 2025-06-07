@@ -6,10 +6,17 @@ export async function ExtractTextFromElementExecutor(
 ): Promise<boolean> {
   try {
     const selector = await environment.getInput("Selector");
-    if (!selector) return false;
+    if (!selector) {
+      console.error("Selector not defined");
+      return false;
+    }
+    
 
     const html = environment.getInput("Html");
-    if (!html) return false;
+    if (!html) {
+      console.error("HTML not defined");
+      return false;
+    }
 
     const $ = cheerio.load(html);
     const element = $(selector);
