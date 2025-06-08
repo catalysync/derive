@@ -16,6 +16,7 @@ import { CalendarIcon, CircleDashedIcon, ClockIcon, CoinsIcon, Loader2Icon, Luci
 import { ReactNode, useEffect, useState } from "react";
 import PhaseStatusBadge from "../phase-status-badge";
 import { LogLevel } from "@/modules/common/types/log";
+import ReactCountUpWrapper from "../../billing/ReactCountUpWrapper";
 
 type ExecutionData = Awaited<ReturnType<typeof GetWorkflowExecutionWithPhases>>;
 
@@ -84,7 +85,9 @@ const ExecutionViewer = ({ initialData }: { initialData: ExecutionData }) => {
           }/>
 
           {/* Credits */}
-          <ExecutionLabel Icon={CoinsIcon} label="Credits Consumed" value={creditsConsumed} />
+          <ExecutionLabel Icon={CoinsIcon} label="Credits Consumed" value={
+            <ReactCountUpWrapper value={creditsConsumed} />
+          } />
 
           <Separator />
 
@@ -158,6 +161,7 @@ const ExecutionViewer = ({ initialData }: { initialData: ExecutionData }) => {
                       <CoinsIcon size={18} className="stroke-muted-foreground"/>
                       <span>Credits</span>
                     </div>
+                    <span>{phaseDetails.data.creditsConsumed}</span>
                   </Badge>
                   <Badge className="space-x-4">
                     <div className="flex gap-1 items-center">

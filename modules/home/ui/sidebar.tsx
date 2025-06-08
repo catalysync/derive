@@ -2,6 +2,7 @@
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import UserAvailableCreditsBadge from "@/modules/workflows/ui/billing/UserAvailableCreditsBadge"
 import { CoinsIcon, HomeIcon, Layers2Icon, Link, MenuIcon, ShieldCheckIcon, SquareDashedMousePointer } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -49,6 +50,8 @@ const DesktopSidebar = () => {
         </Link>
       </div>
 
+      <div className="p-2"><UserAvailableCreditsBadge /></div>
+
       <div className="flex justify-content flex-col p-2 text-blue-500">
         {
           routes.map(route => (
@@ -89,6 +92,9 @@ export function MobileSidebar() {
               </div>
             </Link>
           </div>
+
+          <UserAvailableCreditsBadge />
+          
           <div className="flex flex-col gap-1">
             {
               routes.map(route => (
