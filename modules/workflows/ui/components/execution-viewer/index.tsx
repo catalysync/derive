@@ -66,7 +66,16 @@ const ExecutionViewer = ({ initialData }: { initialData: ExecutionData }) => {
       border-r-2 border-separate flex flex-grow flex-col overflow-hidden">
         <div className="py-4 px-2">
           {/* Status */}
-          <ExecutionLabel Icon={CircleDashedIcon} label="Status" value={query.data?.status} />
+          <ExecutionLabel
+            Icon={CircleDashedIcon}
+            label="Status"
+            value={
+              <div className="font-semibold capitalize flex gap-2 items-center">
+                <PhaseStatusBadge status={query.data?.status as ExecutionPhaseStatus} />
+                <span>{query.data?.status}</span>
+              </div>
+            }
+          />
 
           {/* Started At */}
           <ExecutionLabel Icon={CalendarIcon} label="Started at" value={ 
